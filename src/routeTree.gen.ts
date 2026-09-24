@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PageRouteImport } from './routes/$page'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as SitePageRouteImport } from './routes/site.$page'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const PageRoute = PageRouteImport.update({
   path: '/$page',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitePageRoute = SitePageRouteImport.update({
   id: '/site/$page',
   path: '/site/$page',
@@ -32,30 +38,34 @@ const SitePageRoute = SitePageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$page': typeof PageRoute
+  '/admin': typeof AdminRoute
   '/site/$page': typeof SitePageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$page': typeof PageRoute
+  '/admin': typeof AdminRoute
   '/site/$page': typeof SitePageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$page': typeof PageRoute
+  '/admin': typeof AdminRoute
   '/site/$page': typeof SitePageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$page' | '/site/$page'
+  fullPaths: '/' | '/$page' | '/admin' | '/site/$page'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$page' | '/site/$page'
-  id: '__root__' | '/' | '/$page' | '/site/$page'
+  to: '/' | '/$page' | '/admin' | '/site/$page'
+  id: '__root__' | '/' | '/$page' | '/admin' | '/site/$page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PageRoute: typeof PageRoute
+  AdminRoute: typeof AdminRoute
   SitePageRoute: typeof SitePageRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/site/$page': {
       id: '/site/$page'
       path: '/site/$page'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PageRoute: PageRoute,
+  AdminRoute: AdminRoute,
   SitePageRoute: SitePageRoute,
 }
 export const routeTree = rootRouteImport
