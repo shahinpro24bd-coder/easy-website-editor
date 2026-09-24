@@ -40,7 +40,9 @@ export async function renderSitePage(request: Request, slug: string): Promise<Re
   const bootstrap =
     `<script>window.__SITE_LANG__=${JSON.stringify(lang)};` +
     `window.__SITE_LANGS__=${JSON.stringify([...SITE_LANGS])};` +
-    `window.__SITE_EDIT__=${editMode ? "true" : "false"};</script>`;
+    `window.__SITE_EDIT__=${editMode ? "true" : "false"};</script>` +
+    `<script src="/js/local-content.js" defer></script>`;
+
 
   let html = renderPage(source, {
     texts,
