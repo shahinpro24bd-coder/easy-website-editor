@@ -20,3 +20,6 @@
 - [x] Make all site images portable in downloaded source
 - [x] Reduce image payload without changing placement
 - [x] Verify image rendering and final file size
+
+- [x] Run without any hosting keys or environment variables (content bundled, edits saved in the browser)
+- [x] Admin login admin/admin123 at /admin
