@@ -23,3 +23,7 @@
 
 - [x] Run without any hosting keys or environment variables (content bundled, edits saved in the browser)
 - [x] Admin login admin/admin123 at /admin
+
+- [x] Make the About photo and icon fonts load from deploy-safe local paths on Vercel
+- [x] Replace popup text editing with direct inline editing in the admin preview
+- [x] Verify deployed-style asset requests and inline save behavior

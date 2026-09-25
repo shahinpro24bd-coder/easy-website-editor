@@ -7,97 +7,56 @@
 
   var style = document.createElement("style");
   style.textContent =
-    "[data-ck]:hover,[data-ck-attr]:hover{outline:2px dashed #2563eb!important;outline-offset:2px;cursor:text}" +
+    ".cms-inline-text{display:inline;box-decoration-break:clone;-webkit-box-decoration-break:clone;border:1px dashed rgba(37,99,235,.55);border-radius:3px;padding:1px 3px;margin:-2px 0;cursor:text;transition:background-color .15s,border-color .15s,box-shadow .15s}" +
+    ".cms-inline-text:hover{background:rgba(219,234,254,.72);border-color:#2563eb}" +
+    ".cms-inline-text:focus{outline:0;background:#fff!important;color:#0f172a!important;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.2)}" +
+    "[data-ck-attr]:hover{outline:2px dashed #2563eb!important;outline-offset:2px;cursor:text}" +
     "[data-ik]:hover,[data-ik-bg]:hover{outline:3px solid #16a34a!important;outline-offset:2px;cursor:pointer}" +
-    ".cms-panel{position:fixed;top:16px;right:16px;z-index:2147483647;width:340px;max-height:80vh;overflow:auto;" +
-    "background:#fff;color:#0f172a;border-radius:12px;box-shadow:0 20px 45px rgba(15,23,42,.28);padding:14px;" +
-    "font:14px/1.45 system-ui,sans-serif}" +
-    ".cms-panel h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#64748b}" +
-    ".cms-panel textarea{width:100%;min-height:80px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;" +
-    "font:inherit;resize:vertical;box-sizing:border-box}" +
-    ".cms-panel label{display:block;font-size:11px;color:#64748b;margin:10px 0 4px}" +
-    ".cms-panel button{margin-top:10px;border:0;border-radius:8px;padding:8px 12px;background:#0f172a;color:#fff;" +
-    "cursor:pointer;font:inherit}" +
-    ".cms-panel .cms-close{background:#e2e8f0;color:#0f172a;margin-left:8px}";
+    ".cms-inline-text:empty:before{content:'Metin';color:#64748b}";
   document.head.appendChild(style);
 
   function send(message) {
     window.parent.postMessage(Object.assign({ source: "cms-editor" }, message), "*");
   }
 
-  function textNodes(el) {
-    var out = [];
-    for (var n = el.firstChild; n; n = n.nextSibling) {
-      if (n.nodeType === 3 && n.nodeValue && n.nodeValue.trim()) out.push(n);
-    }
-    return out;
-  }
-
-  var panel = null;
-  function closePanel() {
-    if (panel) panel.remove();
-    panel = null;
-  }
-
-  function openTextPanel(el) {
-    closePanel();
-    panel = document.createElement("div");
-    panel.className = "cms-panel";
-    var title = document.createElement("h4");
-    title.textContent = "Metni düzenle";
-    panel.appendChild(title);
-
-    var fields = [];
+  function makeTextEditable(el) {
     var keys = (el.getAttribute("data-ck") || "").split("|").filter(Boolean);
-    var nodes = textNodes(el);
+    var nodes = [];
+    for (var n = el.firstChild; n; n = n.nextSibling) {
+      if (n.nodeType === 3 && n.nodeValue && n.nodeValue.trim()) nodes.push(n);
+    }
     keys.forEach(function (key, i) {
       if (!nodes[i]) return;
-      fields.push({ key: key, node: nodes[i], attr: null, label: "Metin" });
-    });
-    (el.getAttribute("data-ck-attr") || "")
-      .split(";")
-      .filter(Boolean)
-      .forEach(function (pair) {
-        var at = pair.indexOf(":");
-        if (at < 0) return;
-        fields.push({
-          key: pair.slice(at + 1),
-          node: null,
-          attr: pair.slice(0, at),
-          label: pair.slice(0, at),
-        });
+      var node = nodes[i];
+      var raw = node.nodeValue || "";
+      var leading = (raw.match(/^\s*/) || [""])[0];
+      var trailing = (raw.match(/\s*$/) || [""])[0];
+      var span = document.createElement("span");
+      span.className = "cms-inline-text";
+      span.setAttribute("contenteditable", "plaintext-only");
+      span.setAttribute("role", "textbox");
+      span.setAttribute("aria-label", "Metni düzenle");
+      span.setAttribute("data-cms-key", key);
+      span.spellcheck = true;
+      span.textContent = raw.trim();
+      var fragment = document.createDocumentFragment();
+      if (leading) fragment.appendChild(document.createTextNode(leading));
+      fragment.appendChild(span);
+      if (trailing) fragment.appendChild(document.createTextNode(trailing));
+      node.parentNode.replaceChild(fragment, node);
+      span.addEventListener("input", function () {
+        send({ type: "text", key: key, value: span.textContent || "" });
       });
-
-    fields.forEach(function (field) {
-      var label = document.createElement("label");
-      label.textContent = field.label;
-      var area = document.createElement("textarea");
-      area.value = field.attr
-        ? el.getAttribute(field.attr) || ""
-        : (field.node.nodeValue || "").trim();
-      area.addEventListener("input", function () {
-        if (field.attr) {
-          el.setAttribute(field.attr, area.value);
-        } else {
-          var raw = field.node.nodeValue || "";
-          field.node.nodeValue =
-            raw.match(/^\s*/)[0] + area.value + raw.match(/\s*$/)[0];
+      span.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          span.blur();
         }
-        send({ type: "text", key: field.key, value: area.value });
       });
-      panel.appendChild(label);
-      panel.appendChild(area);
     });
-
-    var done = document.createElement("button");
-    done.textContent = "Kapat";
-    done.className = "cms-close";
-    done.addEventListener("click", closePanel);
-    panel.appendChild(done);
-    document.body.appendChild(panel);
-    var first = panel.querySelector("textarea");
-    if (first) first.focus();
   }
+
+  document.querySelectorAll("[data-ck]").forEach(makeTextEditable);
 
   var picker = document.createElement("input");
   picker.type = "file";
@@ -105,7 +64,6 @@
   picker.style.display = "none";
   document.body.appendChild(picker);
   var pendingSlot = null;
-  var pendingTargets = [];
 
   picker.addEventListener("change", function () {
     var file = picker.files && picker.files[0];
@@ -147,8 +105,7 @@
     function (event) {
       var target = event.target;
       var image = target.closest("[data-ik],[data-ik-bg]");
-      var text = target.closest("[data-ck],[data-ck-attr]");
-      if (panel && panel.contains(target)) return;
+      var text = target.closest(".cms-inline-text");
 
       if (image && (image.hasAttribute("data-ik") || !text || image.contains(text))) {
         event.preventDefault();
@@ -162,7 +119,7 @@
       if (text) {
         event.preventDefault();
         event.stopPropagation();
-        openTextPanel(text);
+        text.focus();
       }
     },
     true,
