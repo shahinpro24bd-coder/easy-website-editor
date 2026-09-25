@@ -272,8 +272,8 @@ function Editor({ onSignOut }: { onSignOut: () => void }) {
         </div>
 
         <span className="col-span-2 min-w-0 text-xs text-muted-foreground lg:col-auto">
-          Metne tıklayıp düzenleyin, görsele tıklayıp değiştirin. Değişiklikler bu tarayıcıda
-          saklanır.
+          Çerçeveli metni yerinde düzenleyin; görsele tıklayıp değiştirin. Değişiklikler bu
+          tarayıcıda saklanır.
         </span>
 
         <div className="col-span-2 flex min-w-0 flex-wrap items-center justify-end gap-2 lg:col-auto lg:ml-auto">
